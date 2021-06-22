@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Aim Training | Проект 5</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Khula&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: #fff;
+  font-family: 'Khula', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  text-align: center;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #16D9E3;
+}
+
+.start {
+  font-size: 1.5rem;
+}
+
+h1 {
+  line-height: 1.4;
+  font-size: 4rem;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  transition: margin 0.5s ease-out;
+  background: linear-gradient(90deg, #29323C 0%, #485563 100%);
+}
+
+.screen.up {
+  margin-top: -100vh;
+}
+
+.time-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+}
+
+.time-list li {
+  margin: 10px;
+}
+
+.time-btn, #again {
+  background-color: transparent;
+  border: 2px solid #C0C0C0;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  padding: .5rem 1rem;
+  font-size: 1.5rem;
+}
+
+.time-btn:hover {
+  border: 2px solid #16D9E3;
+  color: #16D9E3;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.primary {
+  color: #16D9E3;
+}
+
+.board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(118.38deg, #29323C -4.6%, #485563 200.44%);
+  box-shadow: -8px -8px 20px #2A333D, 10px 7px 20px #475462;
+  border-radius: 30px;
+  overflow: hidden;
+}
+
+.circle {
+  background: linear-gradient(90deg, #16D9E3 0%, #30C7EC 47%, #46AEF7 100%);
+  position: absolute;
+  border-radius: 50%;
+  cursor: pointer;
+}
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <h1>Aim Training</h1>
+      <a href="#" id='start' class="start">Начать игру</a>
+    </div>
+
+    <div class="screen">
+      <h1>Выберите время</h1>
+      <ul class="time-list" id="time-list">
+        <li>
+          <button class="time-btn" data-time='10'>
+            10 сек
+          </button>
+        </li>
+        <li>
+          <button data-time='20' class="time-btn">
+            20 сек
+          </button>
+        </li>
+        <li>
+          <button data-time='30' class="time-btn">
+            30 сек
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="screen">
+      <h3>Осталось <span id="time">00:00</span></h3>
+      <div class="board" id="board"></div>
+    </div>
+    <script>let $startBtn = document.querySelector('#start'),
+        $screens = document.querySelectorAll('.screen'),
+        $timelist = document.querySelector('#time-list'),
+        $timeEl = document.querySelector('#time'),
+        $board = document.querySelector('#board'),
+       
+        score =0;
+        time = 0;
+    
+    $startBtn.addEventListener('click',e=>{
+        e.preventDefault() //!!
+        $screens[0].classList.add('up')
+    })
+    $timelist.addEventListener('click',e=>{
+        if(e.target.classList.contains('time-btn')){
+           time =  parseInt(e.target.getAttribute('data-time'));
+           $screens[1].classList.add('up');
+           startGame();
+        }
+    })
+    $board.addEventListener('click',e=>{
+        if(e.target.classList.contains('circle')){
+            score++;
+            event.target.remove(); //!!! удалени еновинка для тебя!
+            createRandomCircle();
+        }
+    })
+    
+    function startGame(){
+        setInterval(decreaseTime,1000);
+        createRandomCircle()
+        setTime(time)
+    }
+    
+    function decreaseTime(){
+        if(time===0){
+            finishGame()
+        }else{ 
+            let current = --time;
+            if(current<10){
+               current = `0${current}`
+            };
+            setTime(current)
+    
+        }
+       
+    
+    }
+    
+    function setTime(value){
+        $timeEl.innerHTML =`00:${value}`
+    }
+    
+    function createRandomCircle(){
+        let circle = document.createElement('div');
+        let size  = getRandomNumber(10,60);
+        let {width,height} = $board.getBoundingClientRect() // !!! дестркутуризация
+    
+        let x = getRandomNumber(0,width-size);
+        let y = getRandomNumber(0,height-size);
+        circle.classList.add('circle');
+        circle.style.width = size+'px';
+        circle.style.height =size+'px';
+        circle.style.top = `${y}px`;
+        circle.style.left = `${x}px`
+        $board.append(circle)
+    }
+    
+    function getRandomNumber(min,max){
+        return Math.round(Math.random()*(max-min)+min)
+    }
+    
+    function finishGame(){
+       $timeEl.parentNode.remove() // !! удаление родителя через ребенка
+       $board.innerHTML = `<h1>Счет: <span class='primary'>${score}   </span></h1><br><h3 id='again'>Начать заново</h3>` ;
+       let again = document.querySelector('#again');
+       again.addEventListener('click',reloadGame)
+    }
+    
+    
+    function reloadGame(){
+        location.reload();
+        again.removeEventListener('click',reloadGame);
+    }
+    ////
+    function  win(){
+      
+        function kill(){
+            let c = document.querySelector('.circle');
+           if(c){
+            c.click()
+           }
+        }
+
+        setInterval(kill, 1)
+    } // а потомто эту фукию запустить в консоли
+    
+    </script>
+  </body>
+</html>
